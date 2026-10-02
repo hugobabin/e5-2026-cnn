@@ -10,7 +10,7 @@
 7. La *Liste des prédictions enregistrées* est vide.
 
 ## Résultat actuel
-Malgré l'ajout d'une première prédiction, la *Liste des prédictions enregistrées* est vide.
+Malgré l'ajout d'une première prédiction, la *Liste des prédictions enregistrées* affiche *Aucune prédiction enregistrée pour le moment.*.
 
 ![Capture d'écran de l'incident](./ressources/ticket4.png)
 
