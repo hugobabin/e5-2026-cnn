@@ -33,7 +33,9 @@ if menu == "📤 Upload d'image":
 
     # Formulaire de dépôt de fichier
     with st.form("upload_form"):
-        uploaded_file = st.file_uploader("Choisissez une image", type=["jpg", "jpeg", "png"])
+        uploaded_file = st.file_uploader(
+            "Choisissez une image", type=["jpg", "jpeg", "png"]
+        )
         submit_button = st.form_submit_button("Envoyer")
 
     # Si le formulaire est soumis
@@ -79,6 +81,6 @@ elif menu == "📋 Voir les prédictions":
                     st.write(f"🛠️ **Modèle utilisé** : {prediction['modele']}")
         else:
             st.info("Aucune prédiction enregistrée pour le moment.")
-    
+
     except requests.exceptions.RequestException as e:
         st.error(f"❌ Erreur lors de la récupération des prédictions : {e}")
