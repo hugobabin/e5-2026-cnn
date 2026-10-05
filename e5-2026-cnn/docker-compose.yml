@@ -13,11 +13,12 @@ services:
       - ./databases:/var/lib/mysql
       - ./data/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent" ]
       interval: 5s
       timeout: 5s
       retries: 30
     restart: always
+    privileged: true
 
   adminer:
     image: adminer
@@ -44,11 +45,12 @@ services:
     volumes:
       - ./api/app:/code/app
       - ./api/satelite_images:/code/satelite_images
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80" ]
     depends_on:
       db:
         condition: service_healthy
     restart: always
+    privileged: true
 
   client:
     build: ./client
@@ -61,3 +63,4 @@ services:
     depends_on:
       - web
     restart: always
+    privileged: true
