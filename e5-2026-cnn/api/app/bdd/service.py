@@ -11,10 +11,15 @@ class Service_Prediction(Connexion):
 
             if labels is None:
                 raise ValueError(f"Label absent de la base : {prediction.label}")
-            
+
             cursor.execute(
                 "INSERT INTO predictions (image, label, commentaire, modele) VALUES (%s, %s, %s, %s)",
-                [prediction.image, labels[0]["id"], prediction.commentaire, prediction.modele],
+                [
+                    prediction.image,
+                    labels[0]["id"],
+                    prediction.commentaire,
+                    prediction.modele,
+                ],
             )
 
             bdd.commit()
@@ -29,6 +34,6 @@ class Service_Prediction(Connexion):
             )
 
             rows = cursor.fetchall()
-            length = len(rows) - 1
+            length = len(rows)
 
             return [Prediction(**row) for row in rows[:length]]
