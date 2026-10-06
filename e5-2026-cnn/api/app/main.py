@@ -7,14 +7,20 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
 from mysql.connector import Error as DatabaseError
 from PIL import Image, UnidentifiedImageError
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from starlette.responses import Response
 from app.modele import cnn
 from app.config import UPLOAD_FOLDER
 from app.bdd.service import Service_Prediction
-from app.bdd.prediction import Prediction
+from app.bdd.prediction import Prediction, Retour
+
+CHEMIN_METRICS = "/metrics"
+
 
 @asynccontextmanager
 async def lifespan(app):
     Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
+    Service_Prediction.assurer_colonne_retour()
     cnn.get_model()
     yield
 
@@ -31,6 +37,12 @@ async def database_error(request: Request, exc: DatabaseError):
 @app.get("/")
 def index():
     return "API Prediction!"
+
+
+@app.get(CHEMIN_METRICS, include_in_schema=False)
+def metrics():
+    Service_Prediction.rafraichir_metriques()
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 @app.post("/predictions/satellite/")
 def upload_image(file: UploadFile = File(...)):
@@ -61,3 +73,11 @@ def upload_image(file: UploadFile = File(...)):
 @app.get("/predictions/", response_model=list[Prediction])
 def list_predictions():
     return Service_Prediction.lister_predictions()
+
+
+@app.put("/predictions/{id_prediction}/retour", response_model=Prediction)
+def add_retour(id_prediction: int, retour: Retour):
+    prediction = Service_Prediction.enregistrer_retour(id_prediction, retour.retour)
+    if prediction is None:
+        raise HTTPException(status_code=404, detail="Prédiction introuvable")
+    return prediction
