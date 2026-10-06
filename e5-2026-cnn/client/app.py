@@ -4,7 +4,7 @@ import streamlit as st
 import requests
 
 # Configuration des URLs de l'API
-from config import API_UPLOAD_URL, API_PREDICTIONS_URL
+from config import API_UPLOAD_URL, API_PREDICTIONS_URL, api_retour_url
 
 # Titre de l'application
 st.title("🛰️ Application CNN - Classification d'Images Satellites")
@@ -27,6 +27,55 @@ try:
 except requests.exceptions.RequestException as e:
     st.sidebar.error(f"Erreur lors du chargement du JSON : {e}")
 
+
+def envoyer_retour(id_prediction: int, retour: str) -> None:
+    """Enregistre le pouce vert/rouge de l'utilisateur et réaffiche le résultat mis à jour."""
+    try:
+        response = requests.put(
+            api_retour_url(id_prediction),
+            json={"retour": retour},
+            timeout=(5, 30),
+        )
+        response.raise_for_status()
+        st.session_state["derniere_prediction"] = response.json()
+        st.rerun()
+    except requests.exceptions.RequestException as e:
+        st.error(f"❌ Erreur lors de l'envoi du retour : {e}")
+
+
+def afficher_retour(prediction: dict) -> None:
+    """Affiche les pouces vert/rouge sous le résultat de la prédiction."""
+    st.write("### 👍 Votre avis sur ce résultat")
+    avis = prediction.get("retour")
+
+    colonne_pos, colonne_neg = st.columns(2)
+    with colonne_pos:
+        if st.button(
+            "👍 Le label est correct",
+            key=f"retour_pos_{prediction['id']}",
+            disabled=avis == "positif",
+            use_container_width=True,
+        ):
+            envoyer_retour(prediction["id"], "positif")
+    with colonne_neg:
+        if st.button(
+            "👎 Le label est incorrect",
+            key=f"retour_neg_{prediction['id']}",
+            disabled=avis == "negatif",
+            use_container_width=True,
+        ):
+            envoyer_retour(prediction["id"], "negatif")
+
+    if avis == "positif":
+        st.success("Merci ! Votre retour positif a bien été pris en compte.")
+    elif avis == "negatif":
+        st.warning("Merci ! Votre retour négatif a bien été pris en compte.")
+    else:
+        st.caption(
+            "Votre retour alimente la métrique de satisfaction affichée sur Grafana."
+        )
+
+
 # Page : Upload d'image
 if menu == "📤 Upload d'image":
     st.header("📤 Upload d'une image et envoi vers l'API")
@@ -41,8 +90,10 @@ if menu == "📤 Upload d'image":
     # Si le formulaire est soumis
     if submit_button:
         if uploaded_file is not None:
-            # Afficher l'image uploadée
-            st.image(uploaded_file, caption="Image envoyée", use_container_width=True)
+            # L'image et le résultat sont conservés en session : le clic sur un
+            # pouce relance le script et le résultat doit rester affiché.
+            st.session_state["derniere_image"] = uploaded_file.getvalue()
+            st.session_state.pop("derniere_prediction", None)
 
             # Préparer le fichier pour l'envoi à l'API
             files = {"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
@@ -51,15 +102,25 @@ if menu == "📤 Upload d'image":
             try:
                 response = requests.post(API_UPLOAD_URL, files=files, timeout=(5, 120))
                 response.raise_for_status()  # Vérifie si l'API retourne une erreur HTTP
-
-                # Affiche la réponse de l'API
-                st.success("✅ Réponse de l'API :")
-                st.json(response.json())
-
+                st.session_state["derniere_prediction"] = response.json()["prediction"]
             except requests.exceptions.RequestException as e:
                 st.error(f"❌ Erreur lors de la communication avec l'API : {e}")
         else:
             st.warning("⚠️ Veuillez sélectionner une image avant d'envoyer.")
+
+    # Affichage du dernier résultat, y compris après un clic sur un pouce
+    if "derniere_image" in st.session_state:
+        st.image(
+            st.session_state["derniere_image"],
+            caption="Image envoyée",
+            use_container_width=True,
+        )
+
+    prediction = st.session_state.get("derniere_prediction")
+    if prediction:
+        st.success("✅ Réponse de l'API :")
+        st.json(prediction)
+        afficher_retour(prediction)
 
 # Page : Voir les prédictions enregistrées
 elif menu == "📋 Voir les prédictions":
@@ -79,6 +140,12 @@ elif menu == "📋 Voir les prédictions":
                     st.write(f"🔹 **Label prédit** : {prediction['label']}")
                     st.write(f"📝 **Commentaire** : {prediction['commentaire']}")
                     st.write(f"🛠️ **Modèle utilisé** : {prediction['modele']}")
+                    if prediction.get("retour") == "positif":
+                        st.write("👍 **Retour utilisateur** : positif")
+                    elif prediction.get("retour") == "negatif":
+                        st.write("👎 **Retour utilisateur** : négatif")
+                    else:
+                        st.write("⏳ **Retour utilisateur** : en attente")
         else:
             st.info("Aucune prédiction enregistrée pour le moment.")
 
