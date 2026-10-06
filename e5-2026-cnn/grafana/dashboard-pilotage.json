@@ -1,0 +1,224 @@
+{
+  "apiVersion": 1,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Santé de l'API",
+      "description": "1 = Prometheus réussit à scraper l'API, 0 = API injoignable.",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "up{job=\"api-cnn\"}",
+          "legendFormat": "API"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": { "0": { "text": "Hors service", "color": "red", "index": 0 } },
+              "from": 0,
+              "to": 0
+            },
+            {
+              "type": "value",
+              "options": { "1": { "text": "En service", "color": "green" } },
+              "from": 1,
+              "to": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Prédictions en base",
+      "description": "COUNT(*) sur la table predictions.",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "cnn_predictions_en_base",
+          "legendFormat": "Prédictions"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0 }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Test lister_predictions() (ticket-4)",
+      "description": "1 = la liste renvoyée a la même taille que la base. 0 déclenche l'alerte Ticket4RegressionListePredictions.",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "cnn_predictions_liste_coherence_ok",
+          "legendFormat": "Cohérence"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": { "0": { "text": "Régression", "color": "red", "index": 0 } },
+              "from": 0,
+              "to": 0
+            },
+            {
+              "type": "value",
+              "options": { "1": { "text": "Conforme", "color": "green" } },
+              "from": 1,
+              "to": 1
+            }
+          ],
+          "noValue": "Aucune donnée"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Prédictions en base",
+      "description": "Évolution du nombre de prédictions enregistrées.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "cnn_predictions_en_base",
+          "legendFormat": "Prédictions en base"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Satisfaction utilisateur",
+      "description": "Part des pouces verts parmi tous les retours laissés sur les résultats de prédiction.",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "cnn_retours_positifs / (cnn_retours_positifs + cnn_retours_negatifs)",
+          "legendFormat": "Satisfaction"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 0,
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "noValue": "Aucun retour"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Rétroactions reçues",
+      "description": "Nombre total de pouces verts et rouges enregistrés.",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "cnn_retours_positifs + cnn_retours_negatifs",
+          "legendFormat": "Retours"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "noValue": "0" }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Rétroactions positives / négatives",
+      "description": "Évolution des pouces verts et des pouces rouges enregistrés.",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "cnn_retours_positifs",
+          "legendFormat": "👍 Positifs"
+        },
+        {
+          "refId": "B",
+          "expr": "cnn_retours_negatifs",
+          "legendFormat": "👎 Négatifs"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Évolution de la satisfaction utilisateur",
+      "description": "Taux de pouces verts sur l'ensemble des retours reçus.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "cnn_retours_positifs / (cnn_retours_positifs + cnn_retours_negatifs)",
+          "legendFormat": "Satisfaction"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 0,
+          "min": 0,
+          "max": 1,
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "title": "E5-2026-CNN — Suivi de l'API",
+  "uid": "e5-2026-cnn-pilotage",
+  "tags": ["e5-2026-cnn", "prometheus"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": { "list": [] }
+}

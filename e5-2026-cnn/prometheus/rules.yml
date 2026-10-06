@@ -1,0 +1,12 @@
+groups:
+  - name: e5-2026-cnn
+    rules:
+      - alert: Ticket4RegressionListePredictions
+        expr: cnn_predictions_liste_coherence_ok == 0
+        for: 2m
+        labels:
+          severity: critical
+          ticket: ticket-4
+        annotations:
+          summary: "Régression du bug ticket-4 : lister_predictions ne renvoie pas toutes les prédictions"
+          description: "Depuis plus de 2 minutes, GET /predictions/ renvoie moins de prédictions qu'il n'y en a en base. Le bug corrigé est réapparu."
