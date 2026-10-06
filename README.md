@@ -15,3 +15,9 @@ Malgré l'ajout d'une première prédiction, la *Liste des prédictions enregist
 
 ## Comportement attendu
 La *Liste des prédictions enregistrées* doit afficher la première *prédiction*.
+
+## Conclusion
+
+Réglé le 2026-10-05 à 14h14.
+Ajout d'un test unitaire pour éviter régression.
+Ajout monitoring pour traquer évolutions.
