@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 class Prediction(BaseModel) :
@@ -6,3 +8,8 @@ class Prediction(BaseModel) :
     label : str
     commentaire : str
     modele : str
+    retour : str | None = None
+
+
+class Retour(BaseModel) :
+    retour : Literal["positif", "negatif"]

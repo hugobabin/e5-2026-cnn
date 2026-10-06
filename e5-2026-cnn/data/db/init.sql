@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `predictions` (
   `label` int NOT NULL,
   `commentaire` varchar(100) NOT NULL,
   `modele` varchar(100) NOT NULL,
+  `retour` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `label` (`label`),
   CONSTRAINT `images_ibfk_1` FOREIGN KEY (`label`) REFERENCES `labels` (`id`)

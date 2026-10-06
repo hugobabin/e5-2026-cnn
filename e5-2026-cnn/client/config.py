@@ -10,3 +10,7 @@ API_BASE_URL = os.getenv(
 API_UPLOAD_URL = f"{API_BASE_URL}/predictions/satellite/"
 API_PREDICTIONS_URL = f"{API_BASE_URL}/predictions/"
 API_URL = API_UPLOAD_URL
+
+
+def api_retour_url(id_prediction: int) -> str:
+    return f"{API_BASE_URL}/predictions/{id_prediction}/retour"
